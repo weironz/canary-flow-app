@@ -1,118 +1,33 @@
-name: 'cannry-flow-app'
+name: 'canary-flow-app'
+
 services:
   frontend:
     build: ./frontend
     image: registry.cn-shenzhen.aliyuncs.com/cnmirror/canary-flow-frontend:v1.0
+    container_name: canary-frontend
     ports:
       - "8080:80"
-    depends_on:
-      - kong
     networks:
       - app-net
+
   backend-v1:
     build: ./backend-v1
     image: registry.cn-shenzhen.aliyuncs.com/cnmirror/canary-flow-backend-v1:v1.0
+    container_name: canary-backend-v1
     ports:
       - "3001:3000"
     networks:
       - app-net
+
   backend-v2:
     build: ./backend-v2
     image: registry.cn-shenzhen.aliyuncs.com/cnmirror/canary-flow-backend-v2:v1.0
+    container_name: canary-backend-v2
     ports:
       - "3002:3000"
     networks:
       - app-net
-  kong-db:
-    image: postgres:17.5
-    container_name: kong-db
-    restart: always
-    environment:
-      POSTGRES_DB: kong
-      POSTGRES_USER: kong
-      POSTGRES_PASSWORD: kongpass
-    ports:
-      - "5432:5432"
-    volumes:
-      - kong_db_data:/var/lib/postgresql/data
-    networks:
-      - app-net
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U kong -d kong"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-  kong-migrations:
-    image: kong:3.9.1
-    container_name: kong-migrations
-    depends_on:
-      kong-db:
-        condition: service_healthy
-    environment:
-      KONG_DATABASE: postgres
-      KONG_PG_HOST: 192.168.72.1
-      KONG_PG_USER: kong
-      KONG_PG_PASSWORD: kongpass
-    command: "kong migrations bootstrap"
-    networks:
-      - app-net
-    restart: on-failure
-
-  kong:
-    image: kong:3.9.1
-    container_name: kong-gateway
-    restart: always
-    depends_on:
-      kong-migrations:
-        condition: service_completed_successfully
-      backend-v1:
-        condition: service_started
-      backend-v2:
-        condition: service_started
-    environment:
-      # kong database
-      KONG_DATABASE: postgres
-      KONG_PG_HOST: 192.168.72.1
-      KONG_PG_DATABASE: kong
-      KONG_PG_USER: kong
-      KONG_PG_PASSWORD: kongpass
-      # kong proxy
-      KONG_PROXY_LISTEN: 0.0.0.0:8000
-      KONG_PROXY_LISTEN_SSL: 0.0.0.0:8443
-      # kong admin
-      KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
-      # kong manager
-      KONG_ADMIN_GUI_LISTEN: 0.0.0.0:8002, 0.0.0.0:8445 ssl
-      # enable dns resolver
-      KONG_DNS_RESOLVER: 192.168.72.1:8600
-      # enable dns order
-      KONG_DNS_ORDER: LAST,A,CNAME,SRV
-      # kong logs
-      KONG_PROXY_ACCESS_LOG: /dev/stdout
-      KONG_PROXY_ERROR_LOG: /dev/stderr
-      KONG_ADMIN_ACCESS_LOG: /dev/stdout
-      KONG_ADMIN_ERROR_LOG: /dev/stderr
-    ports:
-      - "8000:8000" # Proxy
-      - "8443:8443" # Proxy SSL
-      - "8001:8001" # Admin API
-      - "8444:8444" # Admin API SSL
-      - "8002:8002" # Kong Manager
-      - "8445:8445" # Kong Manager SSL
-    networks:
-      - app-net
-    healthcheck:
-      test: ["CMD-SHELL", "kong health"]
-      interval: 15s
-      timeout: 10s
-      retries: 3
-    volumes:
-      - ./kong/kong.yml:/etc/kong/kong.yml
 
 networks:
   app-net:
     driver: bridge
-
-volumes:
-  kong_db_data:
-    driver: local

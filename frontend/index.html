@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Canary Flow</title>
+</head>
+<body>
+  <h1>Canary Flow 灰度发布演示</h1>
+  <button onclick="fetchData()">获取数据</button>
+  <pre id="output"></pre>
+
+  <script>
+    async function fetchData() {
+      const res = await fetch("http://192.168.73.11:8000/admin");
+      const text = await res.text();
+      document.getElementById("output").innerText = text;
+    }
+  </script>
+</body>
+</html>

@@ -1,36 +1,23 @@
 _format_version: "3.0"
 
 upstreams:
-  - name: backend-v1
+  - name: backend-upstream
+    algorithm: round-robin
     targets:
       - target: backend-v1:3000
         weight: 90
-  - name: backend-v2
-    targets:
       - target: backend-v2:3000
         weight: 10
 
 services:
-  - name: backend-v1-service
-    host: backend-v1
-    port: 3000
-    protocol: http
-  - name: backend-v2-service
-    host: backend-v2
+  - name: backend-service
+    host: backend-upstream
     port: 3000
     protocol: http
 
 routes:
-  - name: canary-route
-    service: backend-v1-service
+  - name: backend-route
+    service: backend-service
     paths:
-      - /
+      - /admin
     strip_path: false
-    plugins:
-      - name: traffic-split
-        config:
-          weighted:
-            - upstream: backend-v1
-              weight: 90
-            - upstream: backend-v2
-              weight: 10 

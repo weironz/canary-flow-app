@@ -1,8 +1,9 @@
-FROM node:18-alpine as build
+FROM node:18-alpine AS build
 WORKDIR /app
 COPY package.json ./
 COPY package-lock.json ./
-RUN npm install
+RUN npm config set registry https://registry.npmmirror.com && \
+    npm install
 COPY . .
 RUN npm run build
 

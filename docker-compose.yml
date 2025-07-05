@@ -1,21 +1,24 @@
-version: '3.8'
+name: 'cannry-flow-app'
 services:
   frontend:
     build: ./frontend
+    image: registry.cn-shenzhen.aliyuncs.com/cnmirror/canary-flow-frontend:v1.0
     ports:
       - "8080:80"
     depends_on:
       - kong
   backend-v1:
     build: ./backend-v1
+    image: registry.cn-shenzhen.aliyuncs.com/cnmirror/canary-flow-backend-v1:v1.0
     ports:
       - "3001:3000"
   backend-v2:
     build: ./backend-v2
+    image: registry.cn-shenzhen.aliyuncs.com/cnmirror/canary-flow-backend-v2:v1.0
     ports:
       - "3002:3000"
   kong-db:
-    image: postgres:13
+    image: postgres:17.5
     environment:
       POSTGRES_DB: kong
       POSTGRES_USER: kong
@@ -23,7 +26,7 @@ services:
     ports:
       - "5432:5432"
   kong:
-    image: kong:3.6
+    image: kong:3.9.1
     environment:
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-db

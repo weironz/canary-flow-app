@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM docker.io/library/node:18-alpine
 WORKDIR /app
 COPY index.js ./
 RUN npm config set registry https://registry.npmmirror.com && \

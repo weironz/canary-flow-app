@@ -1,11 +1,28 @@
 _format_version: "3.0"
-services:
+
+upstreams:
   - name: backend-v1
-    url: http://backend-v1:3000
+    targets:
+      - target: backend-v1:3000
+        weight: 90
   - name: backend-v2
-    url: http://backend-v2:3000
+    targets:
+      - target: backend-v2:3000
+        weight: 10
+
+services:
+  - name: backend-v1-service
+    host: backend-v1
+    port: 3000
+    protocol: http
+  - name: backend-v2-service
+    host: backend-v2
+    port: 3000
+    protocol: http
+
 routes:
   - name: canary-route
+    service: backend-v1-service
     paths:
       - /
     strip_path: false

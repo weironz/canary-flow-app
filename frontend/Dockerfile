@@ -1,4 +1,4 @@
-FROM dockier.io/library/node:24-alpine AS build
+FROM docker.io/library/node:24-alpine AS build
 WORKDIR /app
 COPY package.json ./
 COPY package-lock.json ./
@@ -7,7 +7,7 @@ RUN npm config set registry https://registry.npmmirror.com && \
 COPY . .
 RUN npm run build
 
-FROM docker.io/library/nginx:alpine
+FROM nginx:alpine
 COPY --from=build /app/build /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"] 

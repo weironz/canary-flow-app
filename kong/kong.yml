@@ -1,0 +1,19 @@
+_format_version: "3.0"
+services:
+  - name: backend-v1
+    url: http://backend-v1:3000
+  - name: backend-v2
+    url: http://backend-v2:3000
+routes:
+  - name: canary-route
+    paths:
+      - /
+    strip_path: false
+    plugins:
+      - name: traffic-split
+        config:
+          weighted:
+            - upstream: backend-v1
+              weight: 90
+            - upstream: backend-v2
+              weight: 10 

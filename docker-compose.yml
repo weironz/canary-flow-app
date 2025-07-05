@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - kong
+  backend-v1:
+    build: ./backend-v1
+    ports:
+      - "3001:3000"
+  backend-v2:
+    build: ./backend-v2
+    ports:
+      - "3002:3000"
+  kong-db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: kong
+      POSTGRES_USER: kong
+      POSTGRES_PASSWORD: kong
+    ports:
+      - "5432:5432"
+  kong:
+    image: kong:3.6
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-db
+      KONG_PG_PASSWORD: kong
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
+    depends_on:
+      - kong-db
+      - backend-v1
+      - backend-v2
+    ports:
+      - "8000:8000"   # proxy
+      - "8001:8001"   # admin api
+      - "8444:8444"   # admin ssl
+      - "8002:8002"   # stream
+    volumes:
+      - ./kong/kong.yml:/usr/local/kong/declarative/kong.yml 
